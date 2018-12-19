@@ -41,6 +41,16 @@ let usuarioSchema = new Schema({
     }
 });
 
+//el toJson imprime el obj
+//usamos una funcion normal, porque necesitamos el this
+usuarioSchema.methods.toJSON = function() {
+    let user = this;
+    let userObj = user.toObject();
+    delete userObj.password;
+    return userObj;
+}
+
+
 //agregamos o usamos el plugin uniqueValidator
 usuarioSchema.plugin(uniqueValidator, { message: '{PATH} debe de ser único' });
 
