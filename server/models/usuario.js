@@ -41,7 +41,7 @@ let usuarioSchema = new Schema({
     }
 });
 
-//el toJson imprime el obj
+//el toJson imprime el obj, como el toString en java
 //usamos una funcion normal, porque necesitamos el this
 usuarioSchema.methods.toJSON = function() {
     let user = this;

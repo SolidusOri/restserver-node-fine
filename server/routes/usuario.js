@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const bcrypt = require('bcrypt');
+const _ = require('underscore');
 const Usuario = require('../models/usuario');
 
 app.get('/usuario', function(req, res) {
@@ -47,9 +48,24 @@ app.post('/usuario', function(req, res) {
 //para actualizar data (buena practica)
 app.put('/usuario/:id', function(req, res) { //:id ,es un parametro
     let id = req.params.id;
-    res.json({
-        id
+    let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
+
+    //{new:true} me devuelve el usuario modificado
+    //runValidators: true, ejecuta las velidaciones del schema
+    Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true }, (err, usuarioDB) => {
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+
+        res.json({
+            ok: true,
+            usuario: usuarioDB
+        })
     })
+
 })
 
 //ahora no se acostumbra a borrar en las bd, se le cambia el estado a un registro
