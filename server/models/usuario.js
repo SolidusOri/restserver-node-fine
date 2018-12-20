@@ -15,7 +15,7 @@ let usuarioSchema = new Schema({
     },
     email: {
         type: String,
-        unique: true,
+        unique: true, //uniqueValidator
         required: [true, 'El correo es necesario']
     },
     password: {
@@ -51,7 +51,7 @@ usuarioSchema.methods.toJSON = function() {
 }
 
 
-//agregamos o usamos el plugin uniqueValidator
+//agregamos o usamos el plugin uniqueValidator para el campo email, este tampoco se podria modificar
 usuarioSchema.plugin(uniqueValidator, { message: '{PATH} debe de ser único' });
 
 module.exports = mongoose.model('Usuario', usuarioSchema);
