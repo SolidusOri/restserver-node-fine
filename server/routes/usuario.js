@@ -3,8 +3,12 @@ const app = express();
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const Usuario = require('../models/usuario');
+//middlewares
+const { verificaToken } = require('../middlewares/autenticacion');
 
-app.get('/usuario', function(req, res) {
+
+//verificaToken es el middlewares que se dispara cuando se hace el get y se ponen como segundo argumento
+app.get('/usuario', verificaToken, (req, res) => {
 
     //|| si no viene el parametro desde sera 0
     //req.query vienen los parametros opcionales

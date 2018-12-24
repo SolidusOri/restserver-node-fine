@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken'); //genera el token
 const Usuario = require('../models/usuario');
 
 app.post('/login', (req, res) => {
@@ -23,6 +24,7 @@ app.post('/login', (req, res) => {
             return res.status(400).json({
                 ok: false,
                 err: {
+                    //en produccion no se debe indicar que fallo
                     message: '(Usuario) o contraseña incorrectos'
                 }
             });
@@ -39,11 +41,16 @@ app.post('/login', (req, res) => {
             });
         }
 
+        //generacion del token
+        let token = jwt.sign({
+            usuario: usuarioBD //payload
+        }, process.env.SEED_TOKEN, { expiresIn: process.env.CADUCIDAD_TOKEN }); //esto serian 30 dias, segundos * minutos * horas * dias
+
         //si llega a este punto es porque no se realizo ningun return
         res.json({
             ok: true,
             usuario: usuarioBD,
-            token: '123'
+            token
         });
     });
 
