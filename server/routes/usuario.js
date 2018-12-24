@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const Usuario = require('../models/usuario');
 //middlewares
-const { verificaToken } = require('../middlewares/autenticacion');
+const { verificaToken, verificaAdmin_role } = require('../middlewares/autenticacion');
 
 
 //verificaToken es el middlewares que se dispara cuando se hace el get y se ponen como segundo argumento
@@ -41,7 +41,7 @@ app.get('/usuario', verificaToken, (req, res) => {
 })
 
 //para crear data (buena practica)
-app.post('/usuario', function(req, res) {
+app.post('/usuario', [verificaToken, verificaAdmin_role], (req, res) => {
     let body = req.body;
     let usuario = new Usuario({
         nombre: body.nombre,
@@ -79,7 +79,7 @@ app.post('/usuario', function(req, res) {
 })
 
 //para actualizar data (buena practica)
-app.put('/usuario/:id', function(req, res) { //:id ,es un parametro
+app.put('/usuario/:id', [verificaToken, verificaAdmin_role], (req, res) => { //:id ,es un parametro
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']); //el email no se podria modificar por el uniqueValidator en el schema usuario
 
@@ -103,7 +103,7 @@ app.put('/usuario/:id', function(req, res) { //:id ,es un parametro
 })
 
 //ahora no se acostumbra a borrar en las bd, se le cambia el estado a un registro
-app.delete('/usuario/:id', function(req, res) {
+app.delete('/usuario/:id', [verificaToken, verificaAdmin_role], (req, res) => {
     let id = req.params.id;
 
     let cambiaEstado = {

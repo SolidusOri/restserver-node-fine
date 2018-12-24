@@ -43,7 +43,7 @@ app.post('/login', (req, res) => {
 
         //generacion del token
         let token = jwt.sign({
-            usuario: usuarioBD //payload
+            usuario: usuarioBD //nuestro payload seria el usuario de BD
         }, process.env.SEED_TOKEN, { expiresIn: process.env.CADUCIDAD_TOKEN }); //esto serian 30 dias, segundos * minutos * horas * dias
 
         //si llega a este punto es porque no se realizo ningun return

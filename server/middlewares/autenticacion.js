@@ -19,11 +19,14 @@ let verificaToken = (req, res, next) => {
         if (err) {
             return res.status(401).json({
                 ok: false,
-                err
+                err: {
+                    message: 'Token no válido'
+                }
             })
         }
 
         //decoded, este es el payload retornado por la funcion verify
+        //le estamos asignando a la req una nueva propiedad llamada usuario, que seria nuestro payload(usuarioBD)
         req.usuario = decoded.usuario; //con esto le damos acceso a las demas peticiones o rutas
         next(); //el next(), hace que el se siga ejecutando el get
     });
@@ -31,6 +34,29 @@ let verificaToken = (req, res, next) => {
 };
 
 
+//========================
+// verificar adminRole
+//========================
+// esta funcion verifica el role del usuario
+let verificaAdmin_role = (req, res, next) => {
+
+    let role = req.usuario.role;
+
+    if (role === 'ADMIN_ROLE') {
+        next(); //si es admin, ejecuta el resto de la peticion
+    } else {
+        return res.json({
+            ok: false,
+            err: {
+                message: 'El usuario no es administrador'
+            }
+        });
+    }
+
+};
+
+
 module.exports = {
-    verificaToken
+    verificaToken,
+    verificaAdmin_role
 }
