@@ -4,9 +4,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); //genera el token
 const Usuario = require('../models/usuario');
 
-//google sing-in
+//google sing-in =====================================
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.CLIENT_ID);
+//====================================================
+
 
 app.post('/login', (req, res) => {
 

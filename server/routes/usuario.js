@@ -10,7 +10,7 @@ const { verificaToken, verificaAdmin_role } = require('../middlewares/autenticac
 //verificaToken es el middlewares que se dispara cuando se hace el get y se ponen como segundo argumento
 app.get('/usuario', verificaToken, (req, res) => {
 
-    //|| si no viene el parametro desde sera 0
+    //|| si no viene el parametro, desde sera 0
     //req.query vienen los parametros opcionales
     let desde = Number(req.query.desde || 0);
 
