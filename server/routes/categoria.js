@@ -14,6 +14,12 @@ app.get('/categoria', verificaToken, (req, res) => {
     Categoria.find({})
         .skip(desde)
         .limit(limite)
+        //ordena por la descripcion
+        .sort('descripcion')
+        //populate, revisara que objectId hay en la peticion(categoria) y nos permite mostrar informacion
+        .populate('usuario', 'nombre email')
+        //en caso de tener otro objectId
+        //.populate('otro', 'campo campo')
         .exec((err, listadoCategoriasBD) => {
             if (err) {
                 return res.status(500).json({
