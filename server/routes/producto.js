@@ -78,6 +78,33 @@ app.get('/producto/:id', verificaToken, (req, res) => {
 // ==========================
 //  Crear un producto
 // ==========================
+app.get('/producto/buscar/:termino', verificaToken, (req, res) => {
+    let termino = req.params.termino;
+    //RegExp, es como un like, la i le indica que no sea sensible a mayus o minuscula
+    let regex = new RegExp(termino, 'i');
+
+    Producto.find({ nombre: regex })
+        .populate('categoria', 'descripcion')
+        .exec((err, productoBD) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    err
+                });
+            }
+
+            res.json({
+                ok: true,
+                producto: productoBD
+            });
+        });
+});
+
+
+
+// ==========================
+//  Crear un producto
+// ==========================
 app.post('/producto', verificaToken, (req, res) => {
     //grabar el usuario
     //grabar una categoria del listado
