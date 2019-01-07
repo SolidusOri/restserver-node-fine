@@ -1,19 +1,23 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const app = express();
-
 const Usuario = require('../models/usuario');
+const Producto = require('../models/producto');
+const { verificaToken } = require('../middlewares/autenticacion');
+const fs = require('fs');
+const path = require('path');
 
 //default options
 //middleware
 //este middleware lo que hace es cargar el obj files con todo lo que se cargue
 app.use(fileUpload());
 
-app.put('/upload/:tipo/:id', function(req, res) {
+app.put('/upload/:tipo/:id', verificaToken, function(req, res) {
 
     let tipo = req.params.tipo;
     let id = req.params.id;
 
+    //validar que se hayan cargados archivos
     if (!req.files) {
         return res.status(400).json({
             ok: false,
@@ -25,7 +29,7 @@ app.put('/upload/:tipo/:id', function(req, res) {
 
     //validar tipos
     let tiposValidos = ['productos', 'usuarios'];
-    if (tiposValidos.indexOf(tipo) < 0) {
+    if (tiposValidos.indexOf(tipo) < 0) { //si entra al if no habrian tipos validos
         return res.status(400).json({
             ok: false,
             err: {
@@ -36,7 +40,7 @@ app.put('/upload/:tipo/:id', function(req, res) {
 
     let archivo = req.files.archivo;
     let nombreCortado = archivo.name.split('.');
-    let extension = nombreCortado[nombreCortado.length - 1];
+    let extension = nombreCortado[nombreCortado.length - 1]; //ultima posicion del arreglo
 
     //extensiones permitidas
     let extensionesValidas = ['png', 'jpg', 'gif', 'jpeg'];
@@ -62,8 +66,13 @@ app.put('/upload/:tipo/:id', function(req, res) {
                 err
             })
         }
-        //aqui ya se que la imagen se esta en mi filesystem
-        imagenUsuario(id, res, nombreArchivo);
+
+        //aqui ya se que la imagen esta en mi filesystem
+        if (tipo === 'usuarios') {
+            imagenUsuario(id, res, nombreArchivo);
+        } else {
+            imagenProducto(id, res, nombreArchivo);
+        }
 
     });
 
@@ -73,22 +82,27 @@ app.put('/upload/:tipo/:id', function(req, res) {
 function imagenUsuario(id, res, nombreArchivo) {
     Usuario.findById(id, (err, usuarioBD) => {
         if (err) {
+            //Se borra la imagen que ya esta cargada en el fileSystem, esto debido al err
+            borraArchivo(nombreArchivo, 'usuarios');
             return res.status(500).json({
                 ok: false,
                 err
             });
-            //Se borra la imagen que ya esta cargada en el fileSystem, esto debido al err
         }
 
         if (!usuarioBD) { //no existe
+            //Se borra la imagen que ya esta cargada en el fileSystem, esto debido al err
+            borraArchivo(nombreArchivo, 'usuarios');
             return res.status(400).json({
                 ok: false,
                 err: {
                     message: 'Usuario no encontrado'
                 }
             });
-            //Se borra la imagen que ya esta cargada en el fileSystem, esto debido al err
         }
+
+        //recibe el nombre del archivo y el tipo que seria parte del path
+        borraArchivo(usuarioBD.img, 'usuarios');
 
         usuarioBD.img = nombreArchivo;
 
@@ -109,9 +123,56 @@ function imagenUsuario(id, res, nombreArchivo) {
     });
 }
 
-function imagenProducto() {
+function imagenProducto(id, res, nombreArchivo) {
+    Producto.findById(id, (err, productoBD) => {
+        if (err) {
+            //Se borra la imagen que ya esta cargada en el fileSystem, esto debido al err
+            borraArchivo(nombreArchivo, 'productos');
+            return res.status(500).json({
+                ok: false,
+                err
+            });
+        }
 
+        if (!productoBD) { //no existe id
+            //Se borra la imagen que ya esta cargada en el fileSystem, esto debido al err
+            borraArchivo(nombreArchivo, 'productos');
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'Producto no encontrado'
+                }
+            });
+        }
+
+        //recibe el nombre del archivo y el tipo que seria parte del path
+        borraArchivo(productoBD.img, 'productos');
+
+        productoBD.img = nombreArchivo;
+
+        productoBD.save((err, productoActualizado) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    err
+                });
+            }
+
+            res.json({
+                ok: true,
+                producto: productoActualizado
+            });
+        });
+
+    });
 }
 
+function borraArchivo(nombreArchivo, tipo) {
+    let pathImagen = path.resolve(__dirname, `../../uploads/${tipo}/${nombreArchivo}`);
+    //vemos si el path existe
+    if (fs.existsSync(pathImagen)) {
+        fs.unlinkSync(pathImagen); //borra archivo
+    }
+}
 
 module.exports = app;
